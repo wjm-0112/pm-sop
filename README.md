@@ -78,12 +78,38 @@ docs/                    # 需求与技术方案文档（PRD / 架构 / 数据�
 public/                  # 静态资源（manifest.json / sw.js / icon.svg）
 ```
 
-## ☁️ 部署（国内可达，推荐静态导出 + 对象存储）
+## ☁️ 部署
 
-> ⚠️ Vercel 的 `*.vercel.app` 在国内访问不稳定/被墙，不建议作为国内生产域名。
-> 本项目已改为纯静态导出，部署到国内对象存储 + CDN 是最优解。
+本项目是**纯静态导出**（`next.config.mjs` 中 `output: 'export'` + `basePath: '/pm-sop'`），构建产物为 `out/`。两种部署方式任选其一。
 
-1. 构建静态产物：`npm run build`（生成 `out/`）。
+### 方式一：GitHub Pages（零成本，推荐）
+
+项目已配置 `basePath: '/pm-sop'`，可直接托管到 `https://<用户名>.github.io/pm-sop/`，手机/电脑均可访问，无需域名。
+
+```bash
+# 1. 构建静态产物（生成 out/）
+npm run build
+
+# 2. 推送到 GitHub（首次需先 push 源码到 main 分支）
+git push origin main
+
+# 3. 将 out/ 部署到 gh-pages 分支（需带 repo 权限的 Token）
+#    下面命令会把 out/ 推到 gh-pages 分支；-t 会带上 .nojekyll（防止 GitHub 的 Jekyll 删掉 _next/）
+GITHUB_TOKEN=你的Token npm run deploy:pages
+# 或显式指定带 Token 的仓库地址：
+# npx gh-pages -d out -b gh-pages -t -r https://<TOKEN>@github.com/<用户名>/pm-sop.git
+```
+
+部署完成后，在仓库 **Settings → Pages → Source** 选择 **Deploy from a branch**，分支选 `gh-pages`、目录选 `/root`，保存即可。
+稍等 1–2 分钟，访问 `https://<用户名>.github.io/pm-sop/`。
+
+> ⚠️ 注意：本项目已自动在 `out/` 中加入 `.nojekyll`，**切勿删除**，否则 GitHub Pages 的 Jekyll 会忽略 `_next/` 目录导致页面样式/脚本全部 404。
+
+### 方式二：国内对象存储 + CDN（国内访问更快更稳）
+
+> Vercel 的 `*.vercel.app` 国内访问不稳定；若 GitHub Pages 在国内访问也慢，可改用此方案。
+
+1. 构建：`npm run build`（生成 `out/`）。
 2. 将 `out/` 全部文件上传到 **腾讯云 COS / 阿里云 OSS / 七牛云**（开启静态网站 + 绑定域名）。
 3. 通过 **CDN 开启 HTTPS**（PWA「添加到主屏」必须 HTTPS）。
 4. 手机浏览器打开站点 → 「添加到主屏」，即获得接近原生 App 的体验（底部 Tab + 悬浮新建 + 底部抽屉弹窗 + 离线可用）。
