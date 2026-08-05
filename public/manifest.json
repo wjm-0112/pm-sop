@@ -2,8 +2,8 @@
   "name": "PM SOP - 产品经理工作台",
   "short_name": "PM SOP",
   "description": "贯穿产品经理业务SOP的本地优先工作台",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/pm-sop/",
+  "scope": "/pm-sop/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F8FAFC",
@@ -12,25 +12,25 @@
   "categories": ["productivity", "business"],
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-maskable-512.png",
+      "src": "icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

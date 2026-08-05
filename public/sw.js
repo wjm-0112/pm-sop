@@ -1,14 +1,16 @@
-/* PM SOP Service Worker — 离线优先（App Shell 预缓存 + 导航 network-first 兜底） */
+/* PM SOP Service Worker — 离线优先（App Shell 预缓存 + 导航 network-first 兜底）
+ * 兼容子路径部署（如 GitHub Pages 的 /pm-sop/）：从自身 URL 推导 base。 */
+const BASE = self.location.pathname.replace(/\/sw\.js$/, '') || '/';
 const CACHE = 'pm-sop-v2';
 const PRECACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon.svg',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable-512.png',
-  '/icons/apple-touch-icon.png',
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/manifest.json',
+  BASE + '/icon.svg',
+  BASE + '/icons/icon-192.png',
+  BASE + '/icons/icon-512.png',
+  BASE + '/icons/icon-maskable-512.png',
+  BASE + '/icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -49,8 +51,8 @@ self.addEventListener('fetch', (event) => {
         .catch(async () => {
           const cached = await caches.match(req);
           if (cached) return cached;
-          const shell = await caches.match('/index.html');
-          return shell || caches.match('/');
+          const shell = await caches.match(BASE + '/index.html');
+          return shell || caches.match(BASE + '/');
         })
     );
     return;

@@ -8,11 +8,11 @@ import { AppInit } from '@/components/layout/AppInit';
 export const metadata: Metadata = {
   title: 'PM SOP - 产品经理工作台',
   description: '贯穿产品经理业务SOP的本地优先工作台',
-  manifest: '/manifest.json',
+  manifest: '/pm-sop/manifest.json',
   applicationName: 'PM SOP',
   icons: {
-    icon: '/icon.svg',
-    apple: '/icons/apple-touch-icon.png',
+    icon: '/pm-sop/icon.svg',
+    apple: '/pm-sop/icons/apple-touch-icon.png',
   },
   appleWebApp: {
     capable: true,
