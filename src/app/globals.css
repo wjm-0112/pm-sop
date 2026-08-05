@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  @apply bg-background text-slate-900 antialiased;
+}
+
+.dark body {
+  @apply bg-slate-900 text-slate-100;
+}
+
+/* 暗色模式下的表面/边框调整 */
+.dark .bg-surface {
+  @apply bg-slate-800;
+}
+.dark .border-border {
+  @apply border-slate-700;
+}
+.dark .text-slate-900 {
+  color: #f1f5f9;
+}
+.dark .text-slate-700 {
+  color: #e2e8f0;
+}
+.dark .text-slate-600 {
+  color: #cbd5e1;
+}
+.dark .text-slate-500 {
+  color: #94a3b8;
+}
+.dark .text-slate-400 {
+  color: #94a3b8;
+}
+
+/* 富文本渲染样式 */
+.prose-content h1 {
+  @apply mb-2 mt-4 text-2xl font-bold;
+}
+.prose-content h2 {
+  @apply mb-2 mt-4 text-xl font-semibold;
+}
+.prose-content h3 {
+  @apply mb-2 mt-3 text-lg font-medium;
+}
+.prose-content p {
+  @apply my-2 leading-relaxed;
+}
+.prose-content ul {
+  @apply my-2 list-disc pl-6;
+}
+.prose-content ol {
+  @apply my-2 list-decimal pl-6;
+}
+.prose-content blockquote {
+  @apply my-2 border-l-4 border-border pl-4 italic text-slate-500;
+}
+.prose-content pre {
+  @apply my-2 overflow-x-auto rounded bg-slate-100 p-3 text-sm;
+}
+.prose-content img {
+  @apply my-2 max-w-full rounded;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-slate-300;
+}
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-600;
+}
