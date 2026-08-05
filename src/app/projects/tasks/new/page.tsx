@@ -35,7 +35,7 @@ export default function NewTaskPage() {
       dueDate: toDate(v.dueDate),
     } as Omit<Task, 'id' | 'createdAt' | 'updatedAt'>);
     addToast('success', '任务创建成功');
-    router.push(`/projects/tasks/${id}`);
+    router.push(`/projects/tasks/detail?id=${id}`);
   };
 
   return (

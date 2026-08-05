@@ -26,7 +26,7 @@ export default function NewVersionPage() {
       requirementIds: [],
     } as Omit<Version, 'id' | 'createdAt' | 'updatedAt'>);
     addToast('success', '版本创建成功');
-    router.push(`/planning/versions/${id}`);
+    router.push(`/planning/versions/detail?id=${id}`);
   };
 
   return (

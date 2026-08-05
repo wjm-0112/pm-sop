@@ -33,7 +33,7 @@ export default function NewRequirementPage() {
       businessValue: v.businessValue ? Number(v.businessValue) : null,
     } as Omit<Requirement, 'id' | 'createdAt' | 'updatedAt' | 'changeLog'>);
     addToast('success', '需求创建成功');
-    router.push(`/requirements/${id}`);
+    router.push(`/requirements/detail?id=${id}`);
   };
 
   return (

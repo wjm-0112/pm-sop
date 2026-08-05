@@ -113,7 +113,7 @@ export default function CompetitorsPage() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {competitors.map((c) => (
-              <Link key={c.id} href={`/analysis/competitors/${c.id}`}>
+              <Link key={c.id} href={`/analysis/competitors/detail?id=${c.id}`}>
                 <Card className="h-full">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="font-semibold text-slate-900">{c.name}</span>

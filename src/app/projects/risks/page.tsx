@@ -138,7 +138,7 @@ export default function RisksPage() {
                           >
                             <span className="font-bold">{cellRisks.length}</span>
                             {cellRisks.slice(0, 1).map((r) => (
-                              <Link key={r.id} href={`/projects/risks/${r.id}`} className="truncate text-[10px] underline">
+                              <Link key={r.id} href={`/projects/risks/detail?id=${r.id}`} className="truncate text-[10px] underline">
                                 {r.title.slice(0, 8)}
                               </Link>
                             ))}
@@ -155,7 +155,7 @@ export default function RisksPage() {
           {/* 风险列表 */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {risks.map((r) => (
-              <Link key={r.id} href={`/projects/risks/${r.id}`}>
+              <Link key={r.id} href={`/projects/risks/detail?id=${r.id}`}>
                 <Card className="h-full">
                   <div className="mb-1 flex items-center gap-2">
                     <AlertTriangle size={16} className="text-warning" />

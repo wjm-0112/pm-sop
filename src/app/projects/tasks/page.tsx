@@ -75,7 +75,7 @@ export default function TasksPage() {
               {filtered.map((t: Task) => (
                 <tr key={t.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">
-                    <Link href={`/projects/tasks/${t.id}`} className="font-medium text-slate-800 hover:text-primary">
+                    <Link href={`/projects/tasks/detail?id=${t.id}`} className="font-medium text-slate-800 hover:text-primary">
                       {truncate(t.title, 50)}
                     </Link>
                   </td>

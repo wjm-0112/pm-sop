@@ -51,7 +51,7 @@ export default function VersionsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {versions.map((v) => (
-            <Link key={v.id} href={`/planning/versions/${v.id}`}>
+            <Link key={v.id} href={`/planning/versions/detail?id=${v.id}`}>
               <Card className="h-full">
                 <div className="mb-1 flex items-center justify-between">
                   <span className="font-semibold text-slate-900">{v.title}</span>

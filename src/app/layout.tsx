@@ -9,11 +9,17 @@ export const metadata: Metadata = {
   title: 'PM SOP - 产品经理工作台',
   description: '贯穿产品经理业务SOP的本地优先工作台',
   manifest: '/manifest.json',
+  applicationName: 'PM SOP',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icons/apple-touch-icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'PM SOP',
   },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -21,6 +27,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

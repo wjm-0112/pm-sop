@@ -77,7 +77,7 @@ export default function MilestonesPage() {
         <div className="relative space-y-4 pl-6">
           <div className="absolute bottom-0 left-[11px] top-2 w-0.5 bg-border" />
           {sorted.map((m) => (
-            <Link key={m.id} href={`/projects/milestones/${m.id}`}>
+            <Link key={m.id} href={`/projects/milestones/detail?id=${m.id}`}>
               <div className="relative">
                 <div className="absolute -left-[23px] top-4 h-3 w-3 rounded-full border-2 border-primary bg-surface" />
                 <Card className="hover:shadow-md">

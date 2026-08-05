@@ -52,7 +52,7 @@ export default function PRDListPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {prds.map((p) => (
-            <Link key={p.id} href={`/planning/prd/${p.id}`}>
+            <Link key={p.id} href={`/planning/prd/edit?id=${p.id}`}>
               <Card className="h-full">
                 <div className="mb-2 flex items-center gap-2">
                   <FileText size={18} className="text-primary" />

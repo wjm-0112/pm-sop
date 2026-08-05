@@ -41,7 +41,7 @@ export default function NewPRDPage() {
       reviewers: [],
     } as Omit<PRDDocument, 'id' | 'createdAt' | 'updatedAt'>);
     addToast('success', 'PRD 创建成功');
-    router.push(`/planning/prd/${id}`);
+    router.push(`/planning/prd/edit?id=${id}`);
   };
 
   return (

@@ -151,7 +151,7 @@ export default function DashboardPage() {
               <ul className="divide-y divide-border">
                 {recentRequirements.map((r) => (
                   <li key={r.id} className="flex items-center justify-between py-2.5">
-                    <Link href={`/requirements/${r.id}`} className="truncate text-sm text-slate-700 hover:text-primary">
+                    <Link href={`/requirements/detail?id=${r.id}`} className="truncate text-sm text-slate-700 hover:text-primary">
                       {r.title}
                     </Link>
                     <span className="ml-2 shrink-0 text-xs text-slate-400">
@@ -178,7 +178,7 @@ export default function DashboardPage() {
               <ul className="divide-y divide-border">
                 {recentTasks.map((t) => (
                   <li key={t.id} className="flex items-center justify-between py-2.5">
-                    <Link href={`/projects/tasks/${t.id}`} className="truncate text-sm text-slate-700 hover:text-primary">
+                    <Link href={`/projects/tasks/detail?id=${t.id}`} className="truncate text-sm text-slate-700 hover:text-primary">
                       {t.title}
                     </Link>
                     <span className="ml-2 shrink-0 text-xs text-slate-400">

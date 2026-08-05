@@ -69,7 +69,7 @@ export default function PersonasListPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
-            <Link key={p.id} href={`/analysis/personas/${p.id}`}>
+            <Link key={p.id} href={`/analysis/personas/detail?id=${p.id}`}>
               <Card className="h-full">
                 <div className="mb-2 flex items-center gap-3">
                   {p.avatar ? (

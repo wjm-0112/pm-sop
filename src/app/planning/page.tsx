@@ -62,7 +62,7 @@ export default function RoadmapPage() {
         <div className="overflow-x-auto pb-4">
           <div className="flex min-w-max gap-4">
             {sorted.map((v, i) => (
-              <Link key={v.id} href={`/planning/versions/${v.id}`} className="w-64 shrink-0">
+              <Link key={v.id} href={`/planning/versions/detail?id=${v.id}`} className="w-64 shrink-0">
                 <Card className="h-full">
                   <div className="mb-2 flex items-center gap-2">
                     <MapPin size={16} className="text-primary" />

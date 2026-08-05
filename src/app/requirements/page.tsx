@@ -143,7 +143,7 @@ export default function RequirementsPage() {
               {filtered.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">
-                    <Link href={`/requirements/${r.id}`} className="font-medium text-slate-800 hover:text-primary">
+                    <Link href={`/requirements/detail?id=${r.id}`} className="font-medium text-slate-800 hover:text-primary">
                       {truncate(r.title, 50)}
                     </Link>
                     <div className="mt-1 flex gap-1">
@@ -169,7 +169,7 @@ export default function RequirementsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((r) => (
-            <Link key={r.id} href={`/requirements/${r.id}`}>
+            <Link key={r.id} href={`/requirements/detail?id=${r.id}`}>
               <Card className="h-full">
                 <div className="mb-2 flex items-start justify-between gap-2">
                   <span className="font-medium text-slate-800">{truncate(r.title, 40)}</span>
