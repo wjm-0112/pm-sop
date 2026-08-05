@@ -44,10 +44,19 @@ npm run dev
 
 ## 🏗️ 生产构建
 
+本项目已改造为**纯静态导出**（`next.config.mjs` 中 `output: 'export'`），构建产物为 `out/` 目录，可托管到任意静态服务器 / 对象存储 + CDN：
+
 ```bash
+# 构建纯静态产物
 npm run build
-npm run start
+# 生成的 out/ 即为可部署的静态站点
+
+# 本地预览静态产物（output:'export' 下 npm run start 不可用，改用静态服务器）
+npx serve out
+# 浏览器打开 http://localhost:3000
 ```
+
+> 开发调试仍可用 `npm run dev`（热更新）。
 
 ## 📁 目录结构
 
@@ -69,16 +78,17 @@ docs/                    # 需求与技术方案文档（PRD / 架构 / 数据�
 public/                  # 静态资源（manifest.json / sw.js / icon.svg）
 ```
 
-## ☁️ 部署
+## ☁️ 部署（国内可达，推荐静态导出 + 对象存储）
 
-本项目为纯静态前端，可一键部署到 [Vercel](https://vercel.com/)：
+> ⚠️ Vercel 的 `*.vercel.app` 在国内访问不稳定/被墙，不建议作为国内生产域名。
+> 本项目已改为纯静态导出，部署到国内对象存储 + CDN 是最优解。
 
-1. 将仓库推送到 GitHub（见下方说明）。
-2. 在 Vercel 导入该仓库，框架选择 **Next.js**（默认配置即可）。
-3. 构建命令 `npm run build`、输出目录由 Vercel 自动处理。
-4. 部署完成后，手机端浏览器访问站点即可「添加到主屏」安装为 App。
+1. 构建静态产物：`npm run build`（生成 `out/`）。
+2. 将 `out/` 全部文件上传到 **腾讯云 COS / 阿里云 OSS / 七牛云**（开启静态网站 + 绑定域名）。
+3. 通过 **CDN 开启 HTTPS**（PWA「添加到主屏」必须 HTTPS）。
+4. 手机浏览器打开站点 → 「添加到主屏」，即获得接近原生 App 的体验（底部 Tab + 悬浮新建 + 底部抽屉弹窗 + 离线可用）。
 
-详细的仓库创建、令牌推送与 Vercel 配置步骤见 `docs/05-deployment-guide.md`。
+详细的 COS/OSS 上传步骤、MIME 配置、HTTPS 与离线说明见 `docs/06-domestic-deploy.md`。
 
 ## 💡 数据存储说明
 
@@ -90,4 +100,5 @@ public/                  # 静态资源（manifest.json / sw.js / icon.svg）
 - `docs/02-tech-architecture.md` — 技术架构
 - `docs/03-database-schema.md` — 数据库表结构
 - `docs/04-ui-design-guide.md` — UI 设计规范
-- `docs/05-deployment-guide.md` — 部署指南
+- `docs/05-deployment-guide.md` — 部署指南（GitHub 推送 / Vercel 备选）
+- `docs/06-domestic-deploy.md` — 国内托管部署指南（静态导出 + 对象存储 + CDN）
