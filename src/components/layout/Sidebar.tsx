@@ -11,6 +11,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { ProjectSwitcher } from './ProjectSwitcher';
 
 const navItems = [
   { href: '/', label: '仪表盘', icon: LayoutDashboard },
@@ -30,6 +31,9 @@ export function Sidebar() {
           PM
         </div>
         <span className="text-lg font-semibold text-slate-900">PM SOP</span>
+      </div>
+      <div className="border-b border-border px-3 py-2">
+        <ProjectSwitcher />
       </div>
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => {
