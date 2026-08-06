@@ -31,7 +31,7 @@ interface ColumnProps {
 function Column({ status, tasks }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: `col-${status}` });
   return (
-    <div className="flex w-72 shrink-0 flex-col rounded-lg bg-slate-100 p-3 dark:bg-slate-800/50">
+    <div className="flex w-60 shrink-0 flex-col rounded-lg bg-slate-100 p-3 dark:bg-slate-800/50">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-semibold text-slate-700">{TASK_STATUS[status]}</span>
         <Badge className="bg-white text-slate-500">{tasks.length}</Badge>
@@ -79,9 +79,6 @@ function KanbanCard({ task }: { task: Task }) {
         </span>
       </div>
       {task.assignee && <div className="text-xs text-slate-400">{task.assignee}</div>}
-      {task.dueDate && (
-        <div className="mt-1 text-[11px] text-slate-400">截止 {formatDate(task.dueDate)}</div>
-      )}
     </div>
   );
 }
