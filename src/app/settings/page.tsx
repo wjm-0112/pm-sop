@@ -1,14 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, Upload, Database } from 'lucide-react';
+import { Download, Upload, Database, Cloud } from 'lucide-react';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { Card, Button, LoadingSpinner, Input, Select } from '@/components/ui';
 import { ImportDialog } from '@/components/common/ImportDialog';
 import { ExportMenu } from '@/components/common/ExportMenu';
 import { useUIStore } from '@/stores/useUIStore';
+import { useSyncStore } from '@/stores/useSyncStore';
 import { db } from '@/db/index';
 import { exportFullBackup } from '@/services/export.service';
+import { formatDateTime } from '@/lib/utils';
 import type { AppSettings } from '@/lib/types';
 
 const THEME_OPTIONS = [
@@ -70,8 +72,15 @@ function Toggle({
 export default function SettingsPage() {
   const { settings, load, update } = useSettingsStore();
   const addToast = useUIStore((s) => s.addToast);
+  const { syncStatus, lastSyncAt: syncLastAt, errorMessage, upload, pull, setPassword } = useSyncStore();
   const [importOpen, setImportOpen] = useState(false);
   const [allData, setAllData] = useState<AllData | null>(null);
+  const [encryptionPw, setEncryptionPw] = useState('');
+
+  // 同步本地密码输入到 store 的 sessionPassword
+  useEffect(() => {
+    if (encryptionPw) setPassword(encryptionPw);
+  }, [encryptionPw, setPassword]);
 
   useEffect(() => {
     load();
@@ -117,6 +126,23 @@ export default function SettingsPage() {
   const defaultAssignee = (settings as AppSettings).defaultAssignee;
   const autoBackupEnabled = (settings as AppSettings).autoBackupEnabled;
   const autoBackupInterval = (settings as AppSettings).autoBackupInterval;
+
+  const syncEnabled = (settings as AppSettings).syncEnabled ?? false;
+  const syncToken = (settings as AppSettings).syncToken ?? '';
+  const syncFilePath = (settings as AppSettings).syncFilePath ?? 'sync/pm-sop-backup.enc.json';
+  const settingLastSyncAt = (settings as AppSettings).lastSyncAt;
+  const displaySyncAt = syncLastAt || settingLastSyncAt || null;
+
+  const handleUpload = async () => {
+    if (!encryptionPw) { addToast('warning', '请先输入加密密码'); return; }
+    await upload(encryptionPw);
+  };
+
+  const handlePull = async () => {
+    if (!encryptionPw) { addToast('warning', '请先输入加密密码'); return; }
+    const ok = await pull(encryptionPw);
+    if (ok) loadAllData();
+  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
@@ -232,6 +258,94 @@ export default function SettingsPage() {
             </div>
           )}
         </div>
+      </Card>
+
+      <Card>
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Cloud size={18} className="text-slate-500" />
+            <h3 className="text-sm font-semibold text-slate-700">云端同步</h3>
+          </div>
+          <Toggle
+            checked={syncEnabled}
+            onChange={(v) => update({ syncEnabled: v })}
+          />
+        </div>
+        <p className="mb-4 text-sm text-slate-500">
+          数据用密码端到端加密后存至 GitHub 仓库，跨设备拉取时用同一密码解密。令牌仅作传输凭证，无法读取数据。
+        </p>
+        {syncEnabled && (
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                GitHub 令牌 <span className="font-normal text-slate-400">(Personal Access Token)</span>
+              </label>
+              <Input
+                type="password"
+                value={syncToken}
+                onChange={(e) => update({ syncToken: e.target.value })}
+                placeholder="ghp_..."
+              />
+              <p className="mt-1 text-xs text-slate-400">需 repo 权限。令牌将保存在本地浏览器。</p>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">云端文件路径</label>
+              <Input
+                value={syncFilePath}
+                onChange={(e) => update({ syncFilePath: e.target.value })}
+                placeholder="sync/pm-sop-backup.enc.json"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">加密密码</label>
+              <Input
+                type="password"
+                value={encryptionPw}
+                onChange={(e) => setEncryptionPw(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleUpload()}
+                placeholder="设置一个强密码（不保存，仅用于加解密）"
+              />
+              {encryptionPw && (
+                <p className="mt-1 text-xs text-slate-400">密码仅在当前会话中保存，关闭页面后需重新输入。</p>
+              )}
+            </div>
+
+            {displaySyncAt && (
+              <p className="text-xs text-slate-500">
+                ✅ 上次同步：{formatDateTime(displaySyncAt)}
+              </p>
+            )}
+            {syncStatus === 'error' && errorMessage && (
+              <p className="text-xs text-red-500">❌ {errorMessage}</p>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleUpload}
+                disabled={syncStatus === 'pushing' || !syncToken || !encryptionPw}
+              >
+                {syncStatus === 'pushing' ? (
+                  <LoadingSpinner className="mr-1 h-4 w-4" />
+                ) : (
+                  <Upload size={16} />
+                )}
+                上传到云端
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handlePull}
+                disabled={syncStatus === 'pulling' || !syncToken || !encryptionPw}
+              >
+                {syncStatus === 'pulling' ? (
+                  <LoadingSpinner className="mr-1 h-4 w-4" />
+                ) : (
+                  <Download size={16} />
+                )}
+                从云端拉取
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       <ImportDialog
