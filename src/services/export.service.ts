@@ -65,3 +65,12 @@ export async function exportFullBackup(allData: Record<string, unknown[]>) {
   };
   downloadFile(`pm-sop-backup-${Date.now()}.json`, JSON.stringify(payload, null, 2), 'application/json');
 }
+
+/** 序列化为同步用的 JSON 字符串（复用备份格式，不下载） */
+export function serializeForSync(allData: Record<string, unknown[]>): string {
+  const payload = {
+    meta: { app: 'PM SOP', type: 'full-backup', exportedAt: new Date().toISOString() },
+    data: allData,
+  };
+  return JSON.stringify(payload);
+}
