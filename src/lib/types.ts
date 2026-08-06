@@ -261,6 +261,13 @@ export interface AppSettings {
   lastBackupSize: number | null;
   defaultView: Record<string, string>;
   shortcuts: Record<string, string>;
+  // 云端同步（GitHub PAT + E2E 加密）
+  syncEnabled?: boolean;
+  syncToken?: string;
+  syncRepoOwner?: string;
+  syncRepoName?: string;
+  syncFilePath?: string;
+  lastSyncAt?: string;
 }
 
 // ===== 筛选类型 =====
