@@ -8,7 +8,7 @@
 
 | 存储 | 用途 | 库 |
 |------|------|-----|
-| IndexedDB | 全部业务数据（10 张表） | Dexie.js |
+| IndexedDB | 全部业务数据（10 张表 + 1 张 projects） | Dexie.js |
 | localStorage | 设置、UI 状态、主题 | Zustand persist |
 
 IndexedDB 选择理由：支持结构化数据、索引查询、大容量（≥数百 MB），适合离线优先应用。
@@ -18,6 +18,7 @@ IndexedDB 选择理由：支持结构化数据、索引查询、大容量（≥�
 ## 2. 实体关系概览
 
 ```
+Project ──projectId──> ALL entities (顶层容器)
 Requirement ──parentId──> Requirement (自关联: 需求分解)
 Requirement ──versionId──> Version
 Version ──requirementIds──> Requirement[] (一对多反向)
@@ -38,6 +39,20 @@ Competitor ──features──> CompetitorFeature[] (内嵌)
 ---
 
 ## 3. 表结构定义
+
+### 3.0 projects（项目 — v2 新增）
+
+| 字段 | 类型 | 索引 | 说明 |
+|------|------|------|------|
+| id | string (UUID) | PK | 主键 |
+| name | string | | 项目名称 |
+| description | string | | 项目描述 |
+| status | enum | ✓ | active/paused/completed |
+| color | string | | 标识色 hex |
+| createdAt | Date | ✓ | 创建 |
+| updatedAt | Date | ✓ | 更新 |
+
+> **projectId 全局关联**：以下 9 张业务表均新增 `projectId: string` 字段（索引 ✓），将数据按项目隔离。
 
 ### 3.1 requirements（需求）
 
@@ -238,6 +253,11 @@ Competitor ──features──> CompetitorFeature[] (内嵌)
 | lastBackupSize | number\|null | | bytes |
 | defaultView | Record | | 模块默认视图 |
 | shortcuts | Record | | 快捷键 |
+| syncEnabled | boolean | | 云端同步开关 |
+| syncToken | string | | GitHub PAT |
+| syncFilePath | string | | 云端文件路径 |
+| lastSyncAt | string | | 上次同步时间 |
+| syncPromptDismissed | boolean | | 同步弹窗已忽略 |
 
 ---
 
@@ -269,16 +289,17 @@ Competitor ──features──> CompetitorFeature[] (内嵌)
 ## 5. Dexie 索引声明
 
 ```typescript
-this.version(1).stores({
-  requirements: 'id, status, priority, type, assignee, createdAt, updatedAt, versionId, parentId',
-  versions: 'id, status, startDate, endDate, createdAt, updatedAt',
-  prdDocuments: 'id, status, version, createdAt, updatedAt',
-  tasks: 'id, status, priority, assignee, requirementId, versionId, milestoneId, createdAt, sortOrder',
-  milestones: 'id, status, dueDate, versionId, createdAt',
-  risks: 'id, status, probability, impact, owner, createdAt',
-  competitors: 'id, type, lastUpdated, createdAt',
-  marketResearch: 'id, category, researchDate, createdAt',
-  personas: 'id, role, createdAt',
+this.version(2).stores({
+  projects: 'id, status, createdAt',
+  requirements: 'id, status, priority, type, assignee, createdAt, updatedAt, versionId, parentId, projectId',
+  versions: 'id, status, startDate, endDate, createdAt, updatedAt, projectId',
+  prdDocuments: 'id, status, version, createdAt, updatedAt, projectId',
+  tasks: 'id, status, priority, assignee, requirementId, versionId, milestoneId, createdAt, sortOrder, projectId',
+  milestones: 'id, status, dueDate, versionId, createdAt, projectId',
+  risks: 'id, status, probability, impact, owner, createdAt, projectId',
+  competitors: 'id, type, lastUpdated, createdAt, projectId',
+  marketResearch: 'id, category, researchDate, createdAt, projectId',
+  personas: 'id, role, createdAt, projectId',
   settings: 'id',
 });
 ```
@@ -290,7 +311,8 @@ this.version(1).stores({
 - 使用 Dexie `version(n)` 递增管理 schema 变更
 - 每次结构升级新增 `this.version(n+1).stores({...}).upgrade(tx => {...})`
 - 升级回调负责旧数据字段补全/转换
-- 当前为 v1，无历史迁移
+- 当前为 v2：新增 `projects` 表 + 所有业务表增加 `projectId` 索引
+- v1→v2 升级：Dexie `version(2).stores({...}).upgrade(tx => {...})`，迁移逻辑：读取 `projects` 表，若无项目则自动创建默认项目并补全所有已有记录的 `projectId`
 
 ---
 
