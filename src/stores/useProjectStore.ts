@@ -1,35 +1,89 @@
 import { create } from 'zustand';
+import { db } from '@/db/index';
 import { taskOps, reorderTasks } from '@/db/operations/tasks';
 import { milestoneOps } from '@/db/operations/milestones';
 import { riskOps } from '@/db/operations/risks';
 import { generateId } from '@/lib/utils';
-import type { Task, Milestone, Risk, TaskStatus } from '@/lib/types';
+import type { Project, Task, Milestone, Risk, TaskStatus } from '@/lib/types';
 
 interface ProjectState {
+  // 项目管理
+  projects: Project[];
+  activeProjectId: string | null;
+  // 任务/里程碑/风险（按当前项目过滤）
   tasks: Task[];
   milestones: Milestone[];
   risks: Risk[];
   isLoading: boolean;
+
+  // project CRUD
+  loadProjects: () => Promise<void>;
+  createProject: (data: { name: string; description: string; color: string }) => Promise<string>;
+  deleteProject: (id: string) => Promise<void>;
+  switchProject: (id: string) => void;
+
+  // task CRUD
   loadAll: () => Promise<void>;
-  createTask: (data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  createTask: (data: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'projectId'>) => Promise<string>;
   updateTask: (id: string, data: Partial<Task>) => Promise<void>;
   removeTask: (id: string) => Promise<void>;
   applyTaskOrder: (
     updates: { id: string; status: TaskStatus; sortOrder: number }[],
   ) => Promise<void>;
-  createMilestone: (data: Omit<Milestone, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  createMilestone: (data: Omit<Milestone, 'id' | 'createdAt' | 'updatedAt' | 'projectId'>) => Promise<string>;
   updateMilestone: (id: string, data: Partial<Milestone>) => Promise<void>;
   removeMilestone: (id: string) => Promise<void>;
-  createRisk: (data: Omit<Risk, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  createRisk: (data: Omit<Risk, 'id' | 'createdAt' | 'updatedAt' | 'projectId'>) => Promise<string>;
   updateRisk: (id: string, data: Partial<Risk>) => Promise<void>;
   removeRisk: (id: string) => Promise<void>;
 }
 
+function filter<T extends { projectId?: string }>(items: T[], pid: string | null): T[] {
+  if (!pid) return items;
+  return items.filter((i) => !i.projectId || i.projectId === pid);
+}
+
 export const useProjectStore = create<ProjectState>((set, get) => ({
+  projects: [],
+  activeProjectId: null,
   tasks: [],
   milestones: [],
   risks: [],
   isLoading: false,
+
+  // ---- 项目管理 ----
+  loadProjects: async () => {
+    const projects = await db.projects.toArray();
+    const pid = get().activeProjectId || projects[0]?.id || null;
+    set({ projects, activeProjectId: pid });
+  },
+  createProject: async (data) => {
+    const now = new Date();
+    const project: Project = {
+      id: generateId(),
+      name: data.name,
+      description: data.description,
+      status: 'active',
+      color: data.color,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await db.projects.put(project);
+    const projects = [...get().projects, project];
+    set({ projects, activeProjectId: project.id });
+    return project.id;
+  },
+  deleteProject: async (id) => {
+    await db.projects.delete(id);
+    const projects = get().projects.filter((p) => p.id !== id);
+    const pid = get().activeProjectId === id ? (projects[0]?.id || null) : get().activeProjectId;
+    set({ projects, activeProjectId: pid });
+  },
+  switchProject: (id) => {
+    set({ activeProjectId: id });
+  },
+
+  // ---- 任务/里程碑/风险 ----
   loadAll: async () => {
     set({ isLoading: true });
     const [tasks, milestones, risks] = await Promise.all([
@@ -37,16 +91,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       milestoneOps.getAll(),
       riskOps.getAll(),
     ]);
-    set({ tasks, milestones, risks, isLoading: false });
+    const pid = get().activeProjectId;
+    set({
+      tasks: filter(tasks, pid),
+      milestones: filter(milestones, pid),
+      risks: filter(risks, pid),
+      isLoading: false,
+    });
   },
   createTask: async (data) => {
     const now = new Date();
-    const item: Task = {
-      ...data,
-      id: generateId(),
-      createdAt: now,
-      updatedAt: now,
-    };
+    const pid = get().activeProjectId || 'default-project';
+    const item: Task = { ...data, id: generateId(), projectId: pid, createdAt: now, updatedAt: now };
     await taskOps.add(item);
     set({ tasks: [...get().tasks, item] });
     return item.id;
@@ -71,7 +127,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
   createMilestone: async (data) => {
     const now = new Date();
-    const item: Milestone = { ...data, id: generateId(), createdAt: now, updatedAt: now };
+    const pid = get().activeProjectId || 'default-project';
+    const item: Milestone = { ...data, id: generateId(), projectId: pid, createdAt: now, updatedAt: now };
     await milestoneOps.add(item);
     set({ milestones: [...get().milestones, item] });
     return item.id;
@@ -86,7 +143,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
   createRisk: async (data) => {
     const now = new Date();
-    const item: Risk = { ...data, id: generateId(), createdAt: now, updatedAt: now };
+    const pid = get().activeProjectId || 'default-project';
+    const item: Risk = { ...data, id: generateId(), projectId: pid, createdAt: now, updatedAt: now };
     await riskOps.add(item);
     set({ risks: [...get().risks, item] });
     return item.id;
