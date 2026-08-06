@@ -59,6 +59,7 @@ export type RequirementSource =
 
 export interface Requirement {
   id: string;
+  projectId?: string;
   title: string;
   description: string;
   type: RequirementType;
@@ -84,6 +85,7 @@ export interface Requirement {
 // ===== 版本 =====
 export interface Version {
   id: string;
+  projectId?: string;
   name: string;
   title: string;
   description: string;
@@ -100,6 +102,7 @@ export interface Version {
 // ===== PRD =====
 export interface PRDDocument {
   id: string;
+  projectId?: string;
   title: string;
   content: string;
   version: string;
@@ -125,6 +128,7 @@ export type TaskPriority = 'P0' | 'P1' | 'P2' | 'P3';
 
 export interface Task {
   id: string;
+  projectId?: string;
   title: string;
   description: string;
   status: TaskStatus;
@@ -150,6 +154,7 @@ export interface Task {
 // ===== 里程碑 =====
 export interface Milestone {
   id: string;
+  projectId?: string;
   title: string;
   description: string;
   dueDate: Date;
@@ -165,6 +170,7 @@ export interface Milestone {
 // ===== 风险 =====
 export interface Risk {
   id: string;
+  projectId?: string;
   title: string;
   description: string;
   category: 'technical' | 'resource' | 'schedule' | 'scope' | 'dependency' | 'other';
@@ -185,6 +191,7 @@ export interface Risk {
 // ===== 竞品 =====
 export interface Competitor {
   id: string;
+  projectId?: string;
   name: string;
   logo: string | null;
   description: string;
@@ -208,6 +215,7 @@ export interface Competitor {
 // ===== 市场调研 =====
 export interface MarketResearch {
   id: string;
+  projectId?: string;
   title: string;
   content: string;
   category: string;
@@ -225,6 +233,7 @@ export interface MarketResearch {
 // ===== 用户画像 =====
 export interface Persona {
   id: string;
+  projectId?: string;
   name: string;
   role: string;
   avatar: string | null;
@@ -244,6 +253,17 @@ export interface Persona {
   scenarios: string[];
   quotes: string[];
   journeyMap: JourneyStage[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ===== 项目（顶层容器 — v2 新增） =====
+export interface Project {
+  id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'paused' | 'completed';
+  color: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -268,6 +288,7 @@ export interface AppSettings {
   syncRepoName?: string;
   syncFilePath?: string;
   lastSyncAt?: string;
+  syncPromptDismissed?: boolean;
 }
 
 // ===== 筛选类型 =====
