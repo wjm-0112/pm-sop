@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { requirementOps } from '@/db/operations/requirements';
 import { generateId } from '@/lib/utils';
+import { useProjectStore } from '@/stores/useProjectStore';
 import type { Requirement, RequirementFilter } from '@/lib/types';
 
 interface RequirementState {
@@ -41,15 +42,19 @@ export const useRequirementStore = create<RequirementState>((set, get) => ({
   sortDirection: 'desc',
   load: async () => {
     set({ isLoading: true });
-    const items = await requirementOps.getAll();
+    const all = await requirementOps.getAll();
+    const pid = useProjectStore.getState().activeProjectId;
+    const items = pid ? all.filter((r) => !r.projectId || r.projectId === pid) : all;
     set({ items, isLoading: false });
   },
   setItems: (items) => set({ items }),
   create: async (data) => {
     const now = new Date();
+    const pid = useProjectStore.getState().activeProjectId ?? 'default-project';
     const item: Requirement = {
       ...data,
       id: generateId(),
+      projectId: pid,
       createdAt: now,
       updatedAt: now,
       changeLog: [],

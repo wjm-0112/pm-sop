@@ -53,8 +53,36 @@ function extractCollections(obj: ParsedBackup): ParsedBackup {
   return obj;
 }
 
+// Date 字段名集合（JSON 导入后需从 ISO 字符串还原为 Date 实例）
+const DATE_FIELDS = new Set([
+  'createdAt', 'updatedAt', 'dueDate', 'startedAt', 'completedAt',
+  'releasedAt', 'startDate', 'endDate', 'researchDate', 'identifiedAt',
+  'resolvedAt', 'closedAt', 'lastBackupAt', 'lastUpdated', 'exportedAt',
+  'changedAt',
+]);
+
+function reviveDatesRecursive(obj: unknown): void {
+  if (!obj || typeof obj !== 'object') return;
+  if (Array.isArray(obj)) {
+    for (const item of obj) reviveDatesRecursive(item);
+    return;
+  }
+  const record = obj as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    const val = record[key];
+    if (DATE_FIELDS.has(key) && typeof val === 'string') {
+      const d = toDate(val);
+      if (d) record[key] = d;
+    } else if (typeof val === 'object' && val !== null) {
+      reviveDatesRecursive(val);
+    }
+  }
+}
+
 async function reviveArray<T extends { id: string }>(arr: unknown[]): Promise<T[]> {
-  return (arr ?? []).map((item) => item as T);
+  const items = (arr ?? []) as Record<string, unknown>[];
+  for (const item of items) reviveDatesRecursive(item);
+  return items as T[];
 }
 
 export async function importData(content: string, strategy: ImportStrategy) {

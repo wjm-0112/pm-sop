@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { versionOps } from '@/db/operations/versions';
 import { prdOps } from '@/db/operations/prdDocuments';
 import { generateId } from '@/lib/utils';
+import { useProjectStore } from '@/stores/useProjectStore';
 import type { Version, PRDDocument } from '@/lib/types';
 
 interface PlanningState {
@@ -24,17 +25,22 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
   isLoading: false,
   loadVersions: async () => {
     set({ isLoading: true });
-    const versions = await versionOps.getAll();
+    const all = await versionOps.getAll();
+    const pid = useProjectStore.getState().activeProjectId;
+    const versions = pid ? all.filter((v) => !v.projectId || v.projectId === pid) : all;
     set({ versions, isLoading: false });
   },
   loadPrds: async () => {
     set({ isLoading: true });
-    const prds = await prdOps.getAll();
+    const all = await prdOps.getAll();
+    const pid = useProjectStore.getState().activeProjectId;
+    const prds = pid ? all.filter((p) => !p.projectId || p.projectId === pid) : all;
     set({ prds, isLoading: false });
   },
   createVersion: async (data) => {
     const now = new Date();
-    const item: Version = { ...data, id: generateId(), createdAt: now, updatedAt: now };
+    const pid = useProjectStore.getState().activeProjectId ?? 'default-project';
+    const item: Version = { ...data, id: generateId(), projectId: pid, createdAt: now, updatedAt: now };
     await versionOps.add(item);
     set({ versions: [...get().versions, item] });
     return item.id;
@@ -49,7 +55,8 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
   },
   createPrd: async (data) => {
     const now = new Date();
-    const item: PRDDocument = { ...data, id: generateId(), createdAt: now, updatedAt: now };
+    const pid = useProjectStore.getState().activeProjectId ?? 'default-project';
+    const item: PRDDocument = { ...data, id: generateId(), projectId: pid, createdAt: now, updatedAt: now };
     await prdOps.add(item);
     set({ prds: [...get().prds, item] });
     return item.id;

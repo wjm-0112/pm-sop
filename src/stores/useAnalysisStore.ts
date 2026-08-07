@@ -3,6 +3,7 @@ import { competitorOps } from '@/db/operations/competitors';
 import { marketResearchOps } from '@/db/operations/marketResearch';
 import { personaOps } from '@/db/operations/personas';
 import { generateId } from '@/lib/utils';
+import { useProjectStore } from '@/stores/useProjectStore';
 import type { Competitor, MarketResearch, Persona } from '@/lib/types';
 
 interface AnalysisState {
@@ -29,18 +30,28 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
   isLoading: false,
   loadAll: async () => {
     set({ isLoading: true });
-    const [competitors, marketResearch, personas] = await Promise.all([
+    const pid = useProjectStore.getState().activeProjectId;
+    const [allComp, allMr, allPer] = await Promise.all([
       competitorOps.getAll(),
       marketResearchOps.getAll(),
       personaOps.getAll(),
     ]);
-    set({ competitors, marketResearch, personas, isLoading: false });
+    const filterBy = <T extends { projectId?: string }>(arr: T[]): T[] =>
+      pid ? arr.filter((i) => !i.projectId || i.projectId === pid) : arr;
+    set({
+      competitors: filterBy(allComp),
+      marketResearch: filterBy(allMr),
+      personas: filterBy(allPer),
+      isLoading: false,
+    });
   },
   createCompetitor: async (data) => {
     const now = new Date();
+    const pid = useProjectStore.getState().activeProjectId ?? 'default-project';
     const item: Competitor = {
       ...data,
       id: generateId(),
+      projectId: pid,
       createdAt: now,
       updatedAt: now,
       lastUpdated: now,
@@ -60,7 +71,8 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
   },
   createMarketResearch: async (data) => {
     const now = new Date();
-    const item: MarketResearch = { ...data, id: generateId(), createdAt: now, updatedAt: now };
+    const pid = useProjectStore.getState().activeProjectId ?? 'default-project';
+    const item: MarketResearch = { ...data, id: generateId(), projectId: pid, createdAt: now, updatedAt: now };
     await marketResearchOps.add(item);
     set({ marketResearch: [...get().marketResearch, item] });
     return item.id;
@@ -77,7 +89,8 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
   },
   createPersona: async (data) => {
     const now = new Date();
-    const item: Persona = { ...data, id: generateId(), createdAt: now, updatedAt: now };
+    const pid = useProjectStore.getState().activeProjectId ?? 'default-project';
+    const item: Persona = { ...data, id: generateId(), projectId: pid, createdAt: now, updatedAt: now };
     await personaOps.add(item);
     set({ personas: [...get().personas, item] });
     return item.id;
