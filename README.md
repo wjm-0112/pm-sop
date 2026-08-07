@@ -90,14 +90,11 @@ public/                  # 静态资源（manifest.json / sw.js / icon.svg）
 # 1. 构建静态产物（生成 out/）
 npm run build
 
-# 2. 推送到 GitHub（首次需先 push 源码到 main 分支）
+# 2. 推源码到 main 分支（SSH 协议）
 git push origin main
 
-# 3. 将 out/ 部署到 gh-pages 分支（需带 repo 权限的 Token）
-#    下面命令会把 out/ 推到 gh-pages 分支；-t 会带上 .nojekyll（防止 GitHub 的 Jekyll 删掉 _next/）
-GITHUB_TOKEN=你的Token npm run deploy:pages
-# 或显式指定带 Token 的仓库地址：
-# npx gh-pages -d out -b gh-pages -t -r https://<TOKEN>@github.com/<用户名>/pm-sop.git
+# 3. 推 out/ 到 gh-pages 分支（gh-pages 包自动处理 .nojekyll，SSH 协议）
+npm run deploy:pages
 ```
 
 部署完成后，在仓库 **Settings → Pages → Source** 选择 **Deploy from a branch**，分支选 `gh-pages`、目录选 `/root`，保存即可。
@@ -116,9 +113,103 @@ GITHUB_TOKEN=你的Token npm run deploy:pages
 
 详细的 COS/OSS 上传步骤、MIME 配置、HTTPS 与离线说明见 `docs/06-domestic-deploy.md`。
 
+## 💻 部署到其他电脑
+
+### 前置条件：SSH Key 配置
+
+本项目 Git 远程使用 SSH 协议（`git@github.com:wjm-0112/pm-sop.git`）。如果目标电脑尚未配置 GitHub SSH key，先执行：
+
+```bash
+# 生成 ED25519 key（如已有可跳过）
+ssh-keygen -t ed25519 -C "your-device" -N "" -f ~/.ssh/id_ed25519
+
+# 查看公钥
+cat ~/.ssh/id_ed25519.pub
+```
+
+将输出的公钥粘贴到 **GitHub → Settings → SSH and GPG keys → New SSH key**，标题随意（如 `macbook` / `公司台式机`）。
+
+### 方式一：完整源码（推荐，可开发修改）
+
+```bash
+# 1. 克隆仓库（SSH 协议，22 端口）
+git clone git@github.com:wjm-0112/pm-sop.git
+cd pm-sop
+
+# 2. 安装依赖
+npm install
+
+# 3. 启动开发服务器
+npm run dev
+# 打开 http://localhost:3000
+
+# 4. （可选）生产构建 + 部署到 GitHub Pages
+npm run build
+npm run deploy:pages
+```
+
+> 🖥️ **WorkBuddy 用户**：pm-sop 代码和构建产物与 WorkBuddy 账号无关，`git clone` 其他电脑后即可正常开发和部署。但 `.workbuddy/` 目录（会话记忆、技能配置）**不在 Git 版本管理中**（已写入 `.gitignore`），每台电脑的 WorkBuddy 记忆独立。
+
+### 方式二：仅运行（无需 Node.js 开发环境）
+
+如果只想用、不修改代码，直接复制本机 `out/` 目录到目标电脑，然后用任意静态服务器托管：
+
+```bash
+# 2a — 最简单
+npx serve out
+
+# 2b — Python 内置
+python -m http.server 3000 -d out
+
+# 2c — Nginx / Apache
+# 将 out/ 内容复制到 web 根目录即可
+```
+
+> ⚠️ 仅运行方式无法改源码。需要改代码请用方式一。
+
+## ☁️ 跨设备数据同步
+
+pm-sop 的业务数据存在浏览器 IndexedDB 中，**不会随 Git 自动携带**。跨设备同步数据请用内置的「云端同步」功能：
+
+### 原理
+
+```
+[电脑A] IndexedDB ──🔐加密──▶ GitHub 仓库 sync/pm-sop-backup.enc.json
+[电脑B] GitHub 仓库 ──🔓解密──▶ IndexedDB（按 ID 覆盖，本地独有保留）
+```
+
+数据全程**端到端加密**（Web Crypto API / AES-GCM 256-bit），密码只在你的设备上输入，云端只有乱码密文。PAT 仅作传输凭证，无法解密数据。
+
+### 从旧电脑上传
+
+1. 浏览器打开 https://wjm-0112.github.io/pm-sop/ → 左侧 **「设置」**
+2. **云端同步** 卡片中：
+   - 开启开关
+   - 填入 **GitHub PAT**（需 `repo` 权限，[创建地址](https://github.com/settings/tokens)）
+   - 输入一个**加密密码**（自行设定并记住——两电脑需相同）
+   - 点击 **「上传到云端」**
+
+### 到新电脑拉取
+
+1. 在新电脑打开同一网址 → **「设置」**
+2. 同样开启云端同步 → 填入**同一个 PAT**
+3. 输入**与上传时相同的密码**（必须一致，否则解密失败）
+4. 点击 **「从云端拉取」**
+
+拉取策略：按 ID 覆盖已有记录，本地独有的保留（`merge` 模式）。
+
+> ⚠️ 密码不保存到任何地方 —— 仅暂存在当前浏览器会话，关闭页面后需重新输入。建议使用密码管理器或记在安全位置。
+
+### 备选：导出 / 导入 JSON
+
+如果不想配置云端同步，也可以在设置中手动导出/导入 JSON 备份文件（通过 U 盘、网盘、微信等传输）：
+
+- **旧电脑**：设置 → 数据管理 → 导出全量备份 (JSON)
+- **新电脑**：设置 → 数据管理 → 导入数据 → 选择备份文件
+
 ## 💡 数据存储说明
 
-所有业务数据保存在**当前浏览器**的 IndexedDB 中（数据库名 `PMSOPDatabase`）。更换设备、清理站点数据或使用隐私模式会导致数据丢失，请务必通过「设置 → 数据管理」定期导出备份。
+所有业务数据保存在**当前浏览器**的 IndexedDB 中（数据库名 `PMSOPDatabase`）。更换设备、清理站点数据或使用隐私模式会导致数据丢失，请定期导出备份，或使用「设置 → 云端同步」将加密数据同步到 GitHub（详见上方「跨设备数据同步」章节）。
 
 ## 📝 文档
 
